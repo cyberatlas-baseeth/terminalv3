@@ -394,7 +394,7 @@ export default function Game() {
                                 <div
                                     key={r}
                                     className={`round-dot ${r < gameState.round ? 'completed' :
-                                            r === gameState.round ? 'current' : ''
+                                        r === gameState.round ? 'current' : ''
                                         }`}
                                 />
                             ))}
@@ -440,7 +440,7 @@ export default function Game() {
                                 <div
                                     key={r}
                                     className={`round-dot ${r < gameState.round ? 'completed' :
-                                            r === gameState.round ? 'current' : ''
+                                        r === gameState.round ? 'current' : ''
                                         }`}
                                 />
                             ))}
@@ -581,7 +581,7 @@ export default function Game() {
     return (
         <div className="terminal-container">
             <div className="terminal-header">
-                <div className="terminal-title">SECURE THE CONNECTION</div>
+                <div className="terminal-title">TERMINAL</div>
                 <div className="terminal-subtitle">
                     {user ? `OPERATOR: ${user.username || `FID:${user.fid}`}` : 'ANONYMOUS'}
                 </div>

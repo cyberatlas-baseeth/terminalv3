@@ -1,0 +1,17 @@
+{
+    "accountAssociation": {
+        "header": "PLACEHOLDER_HEADER",
+        "payload": "PLACEHOLDER_PAYLOAD",
+        "signature": "PLACEHOLDER_SIGNATURE"
+    },
+    "frame": {
+        "version": "1",
+        "name": "Secure the Connection",
+        "iconUrl": "https://your-domain.com/icon.png",
+        "homeUrl": "https://your-domain.com",
+        "imageUrl": "https://your-domain.com/og-image.png",
+        "buttonTitle": "Play Now",
+        "splashImageUrl": "https://your-domain.com/splash.png",
+        "splashBackgroundColor": "#0a0a0a"
+    }
+}

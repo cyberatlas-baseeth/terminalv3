@@ -8,11 +8,11 @@ export interface FarcasterUser {
 }
 
 // Check if we're running inside Farcaster
-export function isInFarcaster(): boolean {
+export async function isInFarcaster(): Promise<boolean> {
     if (typeof window === 'undefined') return false;
 
     try {
-        return sdk.isInMiniApp();
+        return await sdk.isInMiniApp();
     } catch {
         return false;
     }

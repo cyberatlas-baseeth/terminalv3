@@ -65,12 +65,17 @@ export default function Game() {
     });
     const [introIndex, setIntroIndex] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isFarcasterClient, setIsFarcasterClient] = useState(false);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Initialize SDK and get user
     useEffect(() => {
         async function init() {
             await initializeSDK();
+
+            // Check if running inside Farcaster
+            const inFarcaster = await isInFarcaster();
+            setIsFarcasterClient(inFarcaster);
 
             let currentUser = getUserContext();
 
@@ -141,28 +146,27 @@ export default function Game() {
     // When timer reaches 0, fetch selection options
     useEffect(() => {
         if (gameState.phase === 'MEMORIZE' && gameState.timeLeft === 0) {
-            fetchSelectionOptions();
-        }
-    }, [gameState.phase, gameState.timeLeft]);
+            const fetchOptions = async () => {
+                try {
+                    const res = await fetch(
+                        `/api/game/submit?sessionId=${gameState.sessionId}&nonce=${gameState.nonce}`
+                    );
+                    const data = await res.json();
 
-    const fetchSelectionOptions = async () => {
-        try {
-            const res = await fetch(
-                `/api/game/submit?sessionId=${gameState.sessionId}&nonce=${gameState.nonce}`
-            );
-            const data = await res.json();
-
-            if (data.options) {
-                setGameState(prev => ({
-                    ...prev,
-                    phase: 'SELECT',
-                    selectionOptions: data.options,
-                }));
-            }
-        } catch (error) {
-            console.error('Failed to fetch options:', error);
+                    if (data.options) {
+                        setGameState(prev => ({
+                            ...prev,
+                            phase: 'SELECT',
+                            selectionOptions: data.options,
+                        }));
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch options:', error);
+                }
+            };
+            fetchOptions();
         }
-    };
+    }, [gameState.phase, gameState.timeLeft, gameState.sessionId, gameState.nonce]);
 
     const startGame = async () => {
         if (!user) return;
@@ -517,7 +521,7 @@ export default function Game() {
                                 </div>
                             </div>
 
-                            {isInFarcaster() && (
+                            {isFarcasterClient && (
                                 <button className="action-btn" onClick={handleShare}>
                                     [ SHARE RESULT ]
                                 </button>

@@ -77,7 +77,7 @@ export default function Game() {
             const inFarcaster = await isInFarcaster();
             setIsFarcasterClient(inFarcaster);
 
-            let currentUser = getUserContext();
+            let currentUser = await getUserContext();
 
             // If not in Farcaster or no user context, use mock for testing
             if (!currentUser) {

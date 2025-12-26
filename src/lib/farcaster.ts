@@ -30,11 +30,11 @@ export async function initializeSDK(): Promise<void> {
 }
 
 // Get user context from SDK
-export function getUserContext(): FarcasterUser | null {
+export async function getUserContext(): Promise<FarcasterUser | null> {
     if (typeof window === 'undefined') return null;
 
     try {
-        const context = sdk.context;
+        const context = await sdk.context;
         if (context?.user) {
             return {
                 fid: context.user.fid,

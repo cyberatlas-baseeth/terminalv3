@@ -1,4 +1,4 @@
-import { COOLDOWN_HOURS, MAX_SESSIONS_PER_COOLDOWN } from './gameLogic';
+import { COOLDOWN_MINUTES, MAX_SESSIONS_PER_COOLDOWN } from './gameLogic';
 
 // Player data structure
 export interface PlayerData {
@@ -140,8 +140,8 @@ export function recordSessionCompletion(fid: number, perfect: boolean): void {
     const player = getPlayer(fid);
     const now = new Date();
 
-    // Calculate cooldown end time (6 hours from now)
-    const cooldownEnd = new Date(now.getTime() + COOLDOWN_HOURS * 60 * 60 * 1000);
+    // Calculate cooldown end time (COOLDOWN_MINUTES from now)
+    const cooldownEnd = new Date(now.getTime() + COOLDOWN_MINUTES * 60 * 1000);
 
     const updates: Partial<PlayerData> = {
         sessionsInCooldown: player.sessionsInCooldown + 1,

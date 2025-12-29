@@ -527,7 +527,7 @@ export default function Game() {
                             )}
 
                             <div className="limit-warning" style={{ marginTop: 20 }}>
-                                <div className="limit-warning-text">Next attempt in 6 hours</div>
+                                <div className="limit-warning-text">Next attempt in 2 minutes</div>
                             </div>
                         </div>
                     </div>
@@ -560,7 +560,7 @@ export default function Game() {
                             </div>
 
                             <div className="limit-warning" style={{ marginTop: 20 }}>
-                                <div className="limit-warning-text">Next attempt in 6 hours</div>
+                                <div className="limit-warning-text">Next attempt in 2 minutes</div>
                             </div>
                         </div>
                     </div>

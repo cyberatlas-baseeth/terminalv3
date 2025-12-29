@@ -1,17 +1,17 @@
 {
     "accountAssociation": {
-        "header": "PLACEHOLDER_HEADER",
-        "payload": "PLACEHOLDER_PAYLOAD",
-        "signature": "PLACEHOLDER_SIGNATURE"
+        "header": "eyJmaWQiOjEzNjEyMzUsInR5cGUiOiJhdXRoIiwia2V5IjoiMHgxOGM5OTI5OGU1NjgxOGJBOGMyRjM0NDI0ZkIyYUIzQ2Y4ZEQ2QTZkIn0",
+        "payload": "eyJkb21haW4iOiJ0ZXJtaW5hbHYzLnZlcmNlbC5hcHAifQ",
+        "signature": "+gtnIdA9Fos8ZEFgKqXCmue8LPObTWnq0kGm/xn9TWZ/0erp8IVp6rMa2jOtqh42Lbtxgm9a1cQB+MRtwBMrWxs="
     },
     "frame": {
         "version": "1",
         "name": "Terminal",
-        "iconUrl": "https://your-domain.com/icon.png",
-        "homeUrl": "https://your-domain.com",
-        "imageUrl": "https://your-domain.com/og-image.png",
+        "iconUrl": "https://terminalv3.vercel.app/icon.png",
+        "homeUrl": "https://terminalv3.vercel.app",
+        "imageUrl": "https://terminalv3.vercel.app/og-image.png",
         "buttonTitle": "Play Now",
-        "splashImageUrl": "https://your-domain.com/splash.png",
+        "splashImageUrl": "https://terminalv3.vercel.app/splash.png",
         "splashBackgroundColor": "#0a0a0a"
     }
 }

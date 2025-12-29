@@ -13,7 +13,14 @@ type GamePhase =
     | 'ROUND_RESULT'
     | 'SESSION_SUCCESS'
     | 'SESSION_FAIL'
-    | 'LIMIT_REACHED';
+    | 'LIMIT_REACHED'
+    | 'LEADERBOARD';
+
+interface LeaderboardEntry {
+    fid: number;
+    total_tokens: number;
+    rank: number;
+}
 
 interface GameState {
     phase: GamePhase;
@@ -70,6 +77,8 @@ export default function Game() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isFarcasterClient, setIsFarcasterClient] = useState(false);
     const [cooldownDisplay, setCooldownDisplay] = useState('00:00:00');
+    const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+    const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Initialize SDK and get user
@@ -354,6 +363,28 @@ export default function Game() {
         }
     };
 
+    const viewLeaderboard = async () => {
+        setIsLoadingLeaderboard(true);
+
+        try {
+            const res = await fetch('/api/leaderboard');
+            const data = await res.json();
+
+            // Add rank to each entry
+            const rankedLeaderboard = data.leaderboard.map((entry: { fid: number; total_tokens: number }, index: number) => ({
+                ...entry,
+                rank: index + 1,
+            }));
+
+            setLeaderboard(rankedLeaderboard);
+            setGameState(prev => ({ ...prev, phase: 'LEADERBOARD' }));
+        } catch (error) {
+            console.error('Failed to fetch leaderboard:', error);
+        } finally {
+            setIsLoadingLeaderboard(false);
+        }
+    };
+
     // Render based on game phase
     const renderContent = () => {
         switch (gameState.phase) {
@@ -403,6 +434,15 @@ export default function Game() {
                             }}
                         >
                             [ SSH ]
+                        </button>
+
+                        <button
+                            className="action-btn"
+                            onClick={viewLeaderboard}
+                            disabled={isLoadingLeaderboard}
+                            style={{ marginTop: 10 }}
+                        >
+                            {isLoadingLeaderboard ? '[ LOADING... ]' : '[ LEADERBOARD ]'}
                         </button>
                     </div>
                 );
@@ -639,6 +679,56 @@ export default function Game() {
                                 onClick={viewCooldownStatus}
                             >
                                 [ VIEW COOLDOWN STATUS ]
+                            </button>
+                        </div>
+                    </div>
+                );
+
+            case 'LEADERBOARD':
+                return (
+                    <div className="terminal-screen">
+                        <div className="result-container">
+                            <div className="result-title" style={{ marginBottom: 20 }}>
+                                🏆 LEADERBOARD 🏆
+                            </div>
+
+                            <div className="leaderboard-container" style={{ width: '100%', maxWidth: 400 }}>
+                                {leaderboard.length === 0 ? (
+                                    <div className="terminal-line muted" style={{ textAlign: 'center' }}>
+                                        No entries yet
+                                    </div>
+                                ) : (
+                                    leaderboard.map((entry) => (
+                                        <div
+                                            key={entry.fid}
+                                            className="stat-row"
+                                            style={{
+                                                padding: '8px 12px',
+                                                marginBottom: 4,
+                                                background: entry.rank <= 3 ? 'rgba(0, 255, 65, 0.1)' : 'transparent',
+                                                borderRadius: 4,
+                                                border: entry.fid === user?.fid ? '1px solid #00ff41' : 'none'
+                                            }}
+                                        >
+                                            <span className="stat-label">
+                                                {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`}
+                                                {' '}FID: {entry.fid}
+                                                {entry.fid === user?.fid && ' (YOU)'}
+                                            </span>
+                                            <span className="stat-value" style={{ color: entry.rank <= 3 ? '#00ff41' : '#888' }}>
+                                                {entry.total_tokens} ASLR
+                                            </span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            <button
+                                className="action-btn primary"
+                                onClick={viewCooldownStatus}
+                                style={{ marginTop: 20 }}
+                            >
+                                [ BACK ]
                             </button>
                         </div>
                     </div>

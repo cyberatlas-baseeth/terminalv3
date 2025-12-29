@@ -391,6 +391,19 @@ export default function Game() {
                                 </div>
                             </div>
                         )}
+
+                        <button
+                            className={`action-btn ${gameState.stats?.canPlay ? 'primary' : ''}`}
+                            onClick={startGame}
+                            disabled={!gameState.stats?.canPlay}
+                            style={{
+                                marginTop: 20,
+                                opacity: gameState.stats?.canPlay ? 1 : 0.5,
+                                cursor: gameState.stats?.canPlay ? 'pointer' : 'not-allowed'
+                            }}
+                        >
+                            [ SSH ]
+                        </button>
                     </div>
                 );
 

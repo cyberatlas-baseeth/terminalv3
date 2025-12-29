@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlayerStats } from '@/lib/store';
+import { getPlayerTokens } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
     try {
@@ -21,9 +22,16 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        // Get in-memory stats (cooldown info)
         const stats = getPlayerStats(fid);
 
-        return NextResponse.json(stats);
+        // Get total tokens from Supabase
+        const totalTokens = await getPlayerTokens(fid);
+
+        return NextResponse.json({
+            ...stats,
+            totalTokens,  // Override with Supabase value
+        });
 
     } catch (error) {
         console.error('Error getting player stats:', error);

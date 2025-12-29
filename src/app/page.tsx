@@ -34,7 +34,6 @@ interface GameState {
         cooldownRemaining: number;
         cooldownFormatted: string;
         totalTokens: number;
-        currentStreak: number;
     } | null;
 }
 
@@ -330,10 +329,6 @@ export default function Game() {
                                 <div className="stat-row">
                                     <span className="stat-label">Total Tokens</span>
                                     <span className="stat-value">{gameState.stats.totalTokens}</span>
-                                </div>
-                                <div className="stat-row">
-                                    <span className="stat-label">Current Streak</span>
-                                    <span className="stat-value">{gameState.stats.currentStreak} days</span>
                                 </div>
                             </div>
                         )}

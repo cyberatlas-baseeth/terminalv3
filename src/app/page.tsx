@@ -526,9 +526,12 @@ export default function Game() {
                                 </button>
                             )}
 
-                            <div className="limit-warning" style={{ marginTop: 20 }}>
-                                <div className="limit-warning-text">Next attempt in 2 minutes</div>
-                            </div>
+                            <button
+                                className="action-btn primary"
+                                onClick={() => setGameState(prev => ({ ...prev, phase: 'LIMIT_REACHED' }))}
+                            >
+                                [ VIEW COOLDOWN STATUS ]
+                            </button>
                         </div>
                     </div>
                 );
@@ -559,9 +562,12 @@ export default function Game() {
                                 </div>
                             </div>
 
-                            <div className="limit-warning" style={{ marginTop: 20 }}>
-                                <div className="limit-warning-text">Next attempt in 2 minutes</div>
-                            </div>
+                            <button
+                                className="action-btn primary"
+                                onClick={() => setGameState(prev => ({ ...prev, phase: 'LIMIT_REACHED' }))}
+                            >
+                                [ VIEW COOLDOWN STATUS ]
+                            </button>
                         </div>
                     </div>
                 );

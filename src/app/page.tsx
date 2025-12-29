@@ -33,6 +33,7 @@ interface GameState {
         canPlay: boolean;
         cooldownRemaining: number;
         cooldownFormatted: string;
+        cooldownEndsAt: string | null;  // ISO timestamp for client-side countdown
         totalTokens: number;
     } | null;
 }
@@ -68,6 +69,7 @@ export default function Game() {
     const [introIndex, setIntroIndex] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isFarcasterClient, setIsFarcasterClient] = useState(false);
+    const [cooldownDisplay, setCooldownDisplay] = useState('00:00:00');
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Initialize SDK and get user
@@ -128,6 +130,43 @@ export default function Game() {
             return () => clearTimeout(timer);
         }
     }, [gameState.phase, introIndex]);
+
+    // Cooldown countdown effect - updates every second when on LIMIT_REACHED
+    useEffect(() => {
+        if (gameState.phase !== 'LIMIT_REACHED' || !gameState.stats?.cooldownEndsAt) return;
+
+        const formatTime = (ms: number): string => {
+            if (ms <= 0) return '00:00:00';
+            const hours = Math.floor(ms / (1000 * 60 * 60));
+            const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        };
+
+        const updateCountdown = () => {
+            const endTime = new Date(gameState.stats!.cooldownEndsAt!).getTime();
+            const remaining = endTime - Date.now();
+
+            if (remaining <= 0) {
+                setCooldownDisplay('00:00:00');
+                // Cooldown expired - allow playing again
+                setGameState(prev => ({
+                    ...prev,
+                    stats: prev.stats ? { ...prev.stats, canPlay: true } : null
+                }));
+            } else {
+                setCooldownDisplay(formatTime(remaining));
+            }
+        };
+
+        // Initial update
+        updateCountdown();
+
+        // Update every second
+        const interval = setInterval(updateCountdown, 1000);
+
+        return () => clearInterval(interval);
+    }, [gameState.phase, gameState.stats?.cooldownEndsAt]);
 
     // Timer countdown effect
     useEffect(() => {
@@ -316,7 +355,7 @@ export default function Game() {
                             <div className="limit-warning-text">
                                 Security system is locked.
                                 <br />
-                                Next attempt available in: {gameState.stats?.cooldownFormatted || '00:00:00'}
+                                Next attempt available in: {cooldownDisplay}
                             </div>
                         </div>
 
@@ -324,7 +363,7 @@ export default function Game() {
                             <div className="stats-container">
                                 <div className="stat-row">
                                     <span className="stat-label">Cooldown Remaining</span>
-                                    <span className="stat-value">{gameState.stats.cooldownFormatted}</span>
+                                    <span className="stat-value">{cooldownDisplay}</span>
                                 </div>
                                 <div className="stat-row">
                                     <span className="stat-label">Total Tokens</span>

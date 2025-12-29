@@ -135,19 +135,27 @@ export function deleteSession(sessionId: string): void {
     sessions.delete(sessionId);
 }
 
-// Record session completion and start cooldown
-export function recordSessionCompletion(fid: number, perfect: boolean): void {
+// Start cooldown immediately when game starts (prevents mid-game exit exploit)
+export function startSessionCooldown(fid: number): void {
     const player = getPlayer(fid);
     const now = new Date();
 
     // Calculate cooldown end time (COOLDOWN_MINUTES from now)
     const cooldownEnd = new Date(now.getTime() + COOLDOWN_MINUTES * 60 * 1000);
 
-    const updates: Partial<PlayerData> = {
+    updatePlayer(fid, {
         sessionsInCooldown: player.sessionsInCooldown + 1,
         lastPlayedAt: now,
         cooldownEndsAt: cooldownEnd,
-    };
+    });
+}
+
+// Record session completion (cooldown already started at game start)
+export function recordSessionCompletion(fid: number, perfect: boolean): void {
+    const player = getPlayer(fid);
+
+    // Only update perfectSessions (cooldown was already started when game began)
+    const updates: Partial<PlayerData> = {};
 
     if (perfect) {
         updates.perfectSessions = player.perfectSessions + 1;

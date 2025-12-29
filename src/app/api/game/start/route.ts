@@ -9,7 +9,7 @@ import {
 import {
     canStartSession,
     createSession,
-    updatePlayer
+    startSessionCooldown
 } from '@/lib/store';
 
 export async function POST(request: NextRequest) {
@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
 
         createSession(session);
 
-        // Update player's last played
-        updatePlayer(fid, { lastPlayedAt: new Date() });
+        // Start cooldown immediately when game starts (prevents mid-game exit exploit)
+        startSessionCooldown(fid);
 
         // Return data to client (don't send fakeNumber!)
         return NextResponse.json({

@@ -1,11 +1,11 @@
-import { isToday, MAX_SESSIONS_PER_DAY, MAX_TOKENS_PER_DAY } from './gameLogic';
+import { COOLDOWN_HOURS, MAX_SESSIONS_PER_COOLDOWN } from './gameLogic';
 
 // Player data structure
 export interface PlayerData {
     fid: number;
-    dailySessions: number;
-    lastPlayedAt: Date | null;
-    tokensToday: number;
+    sessionsInCooldown: number;  // Sessions used in current cooldown period
+    lastPlayedAt: Date | null;   // When the player last played
+    cooldownEndsAt: Date | null; // When the cooldown ends
     totalTokens: number;
     perfectSessions: number;
     currentStreak: number;
@@ -26,13 +26,37 @@ export interface GameSession {
     displayTime: number;
     tokensEarned: number;
     completed: boolean;
-    correctAnswers: number;  // Track correct answers
-    wrongAnswers: number;    // Track wrong answers
+    correctAnswers: number;
+    wrongAnswers: number;
 }
 
 // In-memory stores (replace with database in production)
 const players = new Map<number, PlayerData>();
 const sessions = new Map<string, GameSession>();
+
+// Check if cooldown has expired
+function isCooldownExpired(cooldownEndsAt: Date | null): boolean {
+    if (!cooldownEndsAt) return true;
+    return new Date() >= new Date(cooldownEndsAt);
+}
+
+// Get remaining cooldown time in milliseconds
+export function getRemainingCooldown(cooldownEndsAt: Date | null): number {
+    if (!cooldownEndsAt) return 0;
+    const remaining = new Date(cooldownEndsAt).getTime() - Date.now();
+    return remaining > 0 ? remaining : 0;
+}
+
+// Format remaining time as hours:minutes:seconds
+export function formatCooldownTime(ms: number): string {
+    if (ms <= 0) return '00:00:00';
+
+    const hours = Math.floor(ms / (1000 * 60 * 60));
+    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
 
 // Get or create player
 export function getPlayer(fid: number): PlayerData {
@@ -41,9 +65,9 @@ export function getPlayer(fid: number): PlayerData {
     if (!player) {
         player = {
             fid,
-            dailySessions: 0,
+            sessionsInCooldown: 0,
             lastPlayedAt: null,
-            tokensToday: 0,
+            cooldownEndsAt: null,
             totalTokens: 0,
             perfectSessions: 0,
             currentStreak: 0,
@@ -52,10 +76,10 @@ export function getPlayer(fid: number): PlayerData {
         players.set(fid, player);
     }
 
-    // Reset daily counters if it's a new day
-    if (player.lastPlayedAt && !isToday(new Date(player.lastPlayedAt))) {
-        player.dailySessions = 0;
-        player.tokensToday = 0;
+    // Reset session counter if cooldown has expired
+    if (isCooldownExpired(player.cooldownEndsAt)) {
+        player.sessionsInCooldown = 0;
+        player.cooldownEndsAt = null;
     }
 
     return player;
@@ -70,13 +94,16 @@ export function updatePlayer(fid: number, updates: Partial<PlayerData>): PlayerD
 }
 
 // Check if player can start new session
-export function canStartSession(fid: number): { allowed: boolean; reason?: string } {
+export function canStartSession(fid: number): { allowed: boolean; reason?: string; cooldownEndsAt?: Date | null } {
     const player = getPlayer(fid);
 
-    if (player.dailySessions >= MAX_SESSIONS_PER_DAY) {
+    if (player.sessionsInCooldown >= MAX_SESSIONS_PER_COOLDOWN && !isCooldownExpired(player.cooldownEndsAt)) {
+        const remainingMs = getRemainingCooldown(player.cooldownEndsAt);
+        const formatted = formatCooldownTime(remainingMs);
         return {
             allowed: false,
-            reason: `Security system allows only ${MAX_SESSIONS_PER_DAY} breach attempts per day. Return tomorrow.`,
+            reason: `Security system is locked. Wait ${formatted} before next attempt.`,
+            cooldownEndsAt: player.cooldownEndsAt,
         };
     }
 
@@ -108,50 +135,46 @@ export function deleteSession(sessionId: string): void {
     sessions.delete(sessionId);
 }
 
-// Award tokens to player
-export function awardTokens(fid: number, amount: number): number {
-    const player = getPlayer(fid);
-
-    // Cap daily tokens
-    const tokensToAward = Math.min(amount, MAX_TOKENS_PER_DAY - player.tokensToday);
-
-    if (tokensToAward > 0) {
-        updatePlayer(fid, {
-            tokensToday: player.tokensToday + tokensToAward,
-            totalTokens: player.totalTokens + tokensToAward,
-        });
-    }
-
-    return tokensToAward;
-}
-
-// Record session completion
+// Record session completion and start cooldown
 export function recordSessionCompletion(fid: number, perfect: boolean): void {
     const player = getPlayer(fid);
-    const today = new Date();
+    const now = new Date();
+
+    // Calculate cooldown end time (6 hours from now)
+    const cooldownEnd = new Date(now.getTime() + COOLDOWN_HOURS * 60 * 60 * 1000);
 
     const updates: Partial<PlayerData> = {
-        dailySessions: player.dailySessions + 1,
-        lastPlayedAt: today,
+        sessionsInCooldown: player.sessionsInCooldown + 1,
+        lastPlayedAt: now,
+        cooldownEndsAt: cooldownEnd,
     };
 
     if (perfect) {
         updates.perfectSessions = player.perfectSessions + 1;
     }
 
-    // Update streak
+    // Update streak (based on daily play, not cooldown)
+    const today = new Date();
     if (player.lastStreakDate) {
         const lastDate = new Date(player.lastStreakDate);
         const yesterday = new Date(today);
         yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
-        if (
+        const isSameDay = (
+            lastDate.getUTCFullYear() === today.getUTCFullYear() &&
+            lastDate.getUTCMonth() === today.getUTCMonth() &&
+            lastDate.getUTCDate() === today.getUTCDate()
+        );
+
+        const isYesterday = (
             lastDate.getUTCFullYear() === yesterday.getUTCFullYear() &&
             lastDate.getUTCMonth() === yesterday.getUTCMonth() &&
             lastDate.getUTCDate() === yesterday.getUTCDate()
-        ) {
+        );
+
+        if (isYesterday) {
             updates.currentStreak = player.currentStreak + 1;
-        } else if (!isToday(lastDate)) {
+        } else if (!isSameDay) {
             updates.currentStreak = 1;
         }
     } else {
@@ -166,14 +189,17 @@ export function recordSessionCompletion(fid: number, perfect: boolean): void {
 // Get player stats
 export function getPlayerStats(fid: number) {
     const player = getPlayer(fid);
+    const cooldownExpired = isCooldownExpired(player.cooldownEndsAt);
+    const remainingMs = getRemainingCooldown(player.cooldownEndsAt);
 
     return {
-        sessionsToday: player.dailySessions,
-        sessionsRemaining: MAX_SESSIONS_PER_DAY - player.dailySessions,
-        tokensToday: player.tokensToday,
+        sessionsUsed: player.sessionsInCooldown,
+        canPlay: cooldownExpired || player.sessionsInCooldown < MAX_SESSIONS_PER_COOLDOWN,
+        cooldownEndsAt: player.cooldownEndsAt,
+        cooldownRemaining: remainingMs,
+        cooldownFormatted: formatCooldownTime(remainingMs),
         totalTokens: player.totalTokens,
         perfectSessions: player.perfectSessions,
         currentStreak: player.currentStreak,
-        canPlay: player.dailySessions < MAX_SESSIONS_PER_DAY,
     };
 }

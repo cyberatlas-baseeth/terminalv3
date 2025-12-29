@@ -30,12 +30,11 @@ interface GameState {
     correctAnswers: number;
     wrongAnswers: number;
     stats: {
-        sessionsToday: number;
-        sessionsRemaining: number;
-        tokensToday: number;
+        canPlay: boolean;
+        cooldownRemaining: number;
+        cooldownFormatted: string;
         totalTokens: number;
         currentStreak: number;
-        canPlay: boolean;
     } | null;
 }
 
@@ -316,21 +315,17 @@ export default function Game() {
                         <div className="limit-warning">
                             <div className="limit-warning-title">⚠ ACCESS RESTRICTED ⚠</div>
                             <div className="limit-warning-text">
-                                Security system allows only 3 breach attempts per day.
+                                Security system is locked.
                                 <br />
-                                Return tomorrow to continue.
+                                Next attempt available in: {gameState.stats?.cooldownFormatted || '00:00:00'}
                             </div>
                         </div>
 
                         {gameState.stats && (
                             <div className="stats-container">
                                 <div className="stat-row">
-                                    <span className="stat-label">Sessions Today</span>
-                                    <span className="stat-value">{gameState.stats.sessionsToday}/3</span>
-                                </div>
-                                <div className="stat-row">
-                                    <span className="stat-label">Tokens Today</span>
-                                    <span className="stat-value">{gameState.stats.tokensToday}</span>
+                                    <span className="stat-label">Cooldown Remaining</span>
+                                    <span className="stat-value">{gameState.stats.cooldownFormatted}</span>
                                 </div>
                                 <div className="stat-row">
                                     <span className="stat-label">Total Tokens</span>
@@ -375,7 +370,7 @@ export default function Game() {
 
                                 {gameState.stats && (
                                     <div className="terminal-line muted" style={{ marginBottom: 20 }}>
-                                        Sessions remaining: {gameState.stats.sessionsRemaining}/3
+                                        1 attempt available
                                     </div>
                                 )}
 
@@ -536,11 +531,9 @@ export default function Game() {
                                 </button>
                             )}
 
-                            {gameState.stats && gameState.stats.sessionsRemaining > 0 && (
-                                <button className="action-btn primary" onClick={resetGame}>
-                                    [ TRY AGAIN ]
-                                </button>
-                            )}
+                            <div className="limit-warning" style={{ marginTop: 20 }}>
+                                <div className="limit-warning-text">Next attempt in 6 hours</div>
+                            </div>
                         </div>
                     </div>
                 );
@@ -569,24 +562,11 @@ export default function Game() {
                                     <span className="stat-label">ASLR Tokens Earned</span>
                                     <span className="stat-value">{gameState.tokensEarned}</span>
                                 </div>
-                                <div className="stat-row">
-                                    <span className="stat-label">Sessions Remaining</span>
-                                    <span className="stat-value">
-                                        {gameState.stats?.sessionsRemaining ?? 0}
-                                    </span>
-                                </div>
                             </div>
 
-                            {gameState.stats && gameState.stats.sessionsRemaining > 0 ? (
-                                <button className="action-btn primary" onClick={resetGame}>
-                                    [ TRY AGAIN ]
-                                </button>
-                            ) : (
-                                <div className="limit-warning" style={{ marginTop: 20 }}>
-                                    <div className="limit-warning-title">NO ATTEMPTS REMAINING</div>
-                                    <div className="limit-warning-text">Return tomorrow</div>
-                                </div>
-                            )}
+                            <div className="limit-warning" style={{ marginTop: 20 }}>
+                                <div className="limit-warning-text">Next attempt in 6 hours</div>
+                            </div>
                         </div>
                     </div>
                 );

@@ -9,7 +9,6 @@ import {
 import {
     canStartSession,
     createSession,
-    getPlayer,
     updatePlayer
 } from '@/lib/store';
 
@@ -65,7 +64,6 @@ export async function POST(request: NextRequest) {
         createSession(session);
 
         // Update player's last played
-        const player = getPlayer(fid);
         updatePlayer(fid, { lastPlayedAt: new Date() });
 
         // Return data to client (don't send fakeNumber!)
@@ -75,7 +73,6 @@ export async function POST(request: NextRequest) {
             numbers: shownNumbers,
             displayTime: roundConfig.displayTime * 1000, // Convert to ms
             nonce,
-            sessionsRemaining: 3 - player.dailySessions - 1,
         });
 
     } catch (error) {

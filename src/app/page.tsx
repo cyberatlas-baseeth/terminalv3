@@ -334,6 +334,26 @@ export default function Game() {
         }));
     };
 
+    const viewCooldownStatus = async () => {
+        if (!user) return;
+
+        try {
+            // Fetch fresh stats from API (includes totalTokens from Supabase)
+            const res = await fetch(`/api/player/stats?fid=${user.fid}`);
+            const stats = await res.json();
+
+            setGameState(prev => ({
+                ...prev,
+                phase: 'LIMIT_REACHED',
+                stats,
+            }));
+        } catch (error) {
+            console.error('Failed to fetch stats:', error);
+            // Still navigate but with existing stats
+            setGameState(prev => ({ ...prev, phase: 'LIMIT_REACHED' }));
+        }
+    };
+
     // Render based on game phase
     const renderContent = () => {
         switch (gameState.phase) {
@@ -567,7 +587,7 @@ export default function Game() {
 
                             <button
                                 className="action-btn primary"
-                                onClick={() => setGameState(prev => ({ ...prev, phase: 'LIMIT_REACHED' }))}
+                                onClick={viewCooldownStatus}
                             >
                                 [ VIEW COOLDOWN STATUS ]
                             </button>
@@ -603,7 +623,7 @@ export default function Game() {
 
                             <button
                                 className="action-btn primary"
-                                onClick={() => setGameState(prev => ({ ...prev, phase: 'LIMIT_REACHED' }))}
+                                onClick={viewCooldownStatus}
                             >
                                 [ VIEW COOLDOWN STATUS ]
                             </button>

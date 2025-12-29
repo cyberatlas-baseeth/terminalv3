@@ -5,16 +5,17 @@ import {
     createSelectionOptions,
     getRoundConfig,
     generateNonce,
-    TOTAL_ROUNDS
+    TOTAL_ROUNDS,
+    TOKENS_PER_CORRECT
 } from '@/lib/gameLogic';
 import {
     getSession,
     updateSession,
     deleteSession,
-    awardTokens,
     recordSessionCompletion,
     getPlayerStats
 } from '@/lib/store';
+import { addPlayerTokens } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
     try {
@@ -65,46 +66,58 @@ export async function POST(request: NextRequest) {
         // Check if the selected number is the fake one
         const isCorrect = selectedNumber === session.fakeNumber;
 
-        if (!isCorrect) {
-            // Wrong answer - session ends
-            deleteSession(sessionId);
-            recordSessionCompletion(fid, false);
+        let tokensAwarded = 0;
+        let newCorrectAnswers = session.correctAnswers;
+        let newWrongAnswers = session.wrongAnswers;
+        let newTokensEarned = session.tokensEarned;
 
-            return NextResponse.json({
-                correct: false,
-                message: 'CONNECTION BREACHED - TRACE DETECTED - ACCESS DENIED',
-                sessionEnded: true,
-                stats: getPlayerStats(fid),
-            });
+        if (isCorrect) {
+            // Correct answer - award tokens
+            tokensAwarded = TOKENS_PER_CORRECT;
+            newCorrectAnswers += 1;
+            newTokensEarned += tokensAwarded;
+
+            // Save to Supabase
+            try {
+                await addPlayerTokens(fid, tokensAwarded);
+            } catch (dbError) {
+                console.error('Failed to save tokens to database:', dbError);
+                // Continue even if DB fails - we'll track locally
+            }
+        } else {
+            // Wrong answer - track it but continue to next round
+            newWrongAnswers += 1;
         }
 
-        // Correct answer
-        const tokensAwarded = awardTokens(fid, 1);
-        const newTokensEarned = session.tokensEarned + tokensAwarded;
-
-        // Check if this was the last round
+        // Check if this was the last round (regardless of correct/wrong)
         if (session.round >= TOTAL_ROUNDS) {
-            // Session complete - all rounds passed!
+            // Session complete - all 3 rounds finished!
             updateSession(sessionId, {
                 completed: true,
-                tokensEarned: newTokensEarned
+                tokensEarned: newTokensEarned,
+                correctAnswers: newCorrectAnswers,
+                wrongAnswers: newWrongAnswers
             });
-            recordSessionCompletion(fid, true);
+
+            const perfect = newWrongAnswers === 0;
+            recordSessionCompletion(fid, perfect);
 
             const totalTime = Math.floor((Date.now() - session.startedAt.getTime()) / 1000);
 
             return NextResponse.json({
-                correct: true,
-                message: 'CONNECTION FULLY SECURED',
+                correct: isCorrect,
+                message: perfect ? 'CONNECTION FULLY SECURED' : 'SESSION COMPLETE',
                 sessionComplete: true,
                 tokensEarned: newTokensEarned,
+                correctAnswers: newCorrectAnswers,
+                wrongAnswers: newWrongAnswers,
                 totalTime,
-                perfectGame: true,
+                perfectGame: perfect,
                 stats: getPlayerStats(fid),
             });
         }
 
-        // Prepare next round
+        // Prepare next round (continue regardless of answer)
         const nextRound = session.round + 1;
         const roundConfig = getRoundConfig(nextRound);
 
@@ -123,12 +136,14 @@ export async function POST(request: NextRequest) {
             roundStartedAt: new Date(),
             displayTime: roundConfig.displayTime,
             tokensEarned: newTokensEarned,
+            correctAnswers: newCorrectAnswers,
+            wrongAnswers: newWrongAnswers,
         });
 
         return NextResponse.json({
-            correct: true,
-            message: 'CONNECTION SECURED',
-            tokensEarned: tokensAwarded,
+            correct: isCorrect,
+            message: isCorrect ? 'CONNECTION SECURED' : 'WRONG NODE - CONTINUE',
+            tokensEarned: isCorrect ? tokensAwarded : 0,
             nextRound: {
                 round: nextRound,
                 numbers: shownNumbers,

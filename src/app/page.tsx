@@ -27,6 +27,8 @@ interface GameState {
     tokensEarned: number;
     totalTime: number;
     message: string;
+    correctAnswers: number;
+    wrongAnswers: number;
     stats: {
         sessionsToday: number;
         sessionsRemaining: number;
@@ -61,6 +63,8 @@ export default function Game() {
         tokensEarned: 0,
         totalTime: 0,
         message: '',
+        correctAnswers: 0,
+        wrongAnswers: 0,
         stats: null,
     });
     const [introIndex, setIntroIndex] = useState(0);
@@ -230,31 +234,27 @@ export default function Game() {
 
             const data = await res.json();
 
-            if (!data.correct) {
-                // Wrong answer - game over
+            if (data.sessionComplete) {
+                // All 3 rounds completed
                 setGameState(prev => ({
                     ...prev,
-                    phase: 'SESSION_FAIL',
-                    message: data.message,
-                    stats: data.stats,
-                }));
-            } else if (data.sessionComplete) {
-                // All rounds completed - success!
-                setGameState(prev => ({
-                    ...prev,
-                    phase: 'SESSION_SUCCESS',
+                    phase: data.perfectGame ? 'SESSION_SUCCESS' : 'SESSION_FAIL',
                     tokensEarned: data.tokensEarned,
+                    correctAnswers: data.correctAnswers,
+                    wrongAnswers: data.wrongAnswers,
                     totalTime: data.totalTime,
                     stats: data.stats,
                 }));
             } else if (data.nextRound) {
-                // Move to next round
+                // Move to next round (regardless of correct/wrong)
                 setGameState(prev => ({
                     ...prev,
                     phase: 'ROUND_RESULT',
                     round: data.nextRound.round,
                     message: data.message,
                     tokensEarned: prev.tokensEarned + (data.tokensEarned || 0),
+                    correctAnswers: data.correct ? prev.correctAnswers + 1 : prev.correctAnswers,
+                    wrongAnswers: data.correct ? prev.wrongAnswers : prev.wrongAnswers + 1,
                 }));
 
                 // After brief delay, start next round
@@ -292,6 +292,8 @@ export default function Game() {
             tokensEarned: 0,
             totalTime: 0,
             message: '',
+            correctAnswers: 0,
+            wrongAnswers: 0,
         }));
     };
 
@@ -474,15 +476,22 @@ export default function Game() {
                 );
 
             case 'ROUND_RESULT':
+                const isCorrectRound = gameState.message.includes('SECURED');
                 return (
                     <div className="terminal-screen">
                         <div className="result-container">
-                            <div className="result-title success glitch-text">
+                            <div className={`result-title ${isCorrectRound ? 'success' : 'error'} glitch-text`}>
                                 {gameState.message}
                             </div>
-                            <div className="terminal-line" style={{ textAlign: 'center' }}>
-                                +1 TOKEN EARNED
-                            </div>
+                            {isCorrectRound ? (
+                                <div className="terminal-line success" style={{ textAlign: 'center' }}>
+                                    +10 ASLR TOKEN EARNED
+                                </div>
+                            ) : (
+                                <div className="terminal-line error" style={{ textAlign: 'center' }}>
+                                    NO TOKEN - WRONG NODE
+                                </div>
+                            )}
                             <div className="terminal-line muted" style={{ textAlign: 'center', marginTop: 10 }}>
                                 Proceeding to Round {gameState.round}...
                             </div>
@@ -541,19 +550,24 @@ export default function Game() {
                     <div className="terminal-screen">
                         <div className="result-container">
                             <div className="result-title error glitch">
-                                ⚠ CONNECTION BREACHED ⚠
+                                SESSION COMPLETE
                             </div>
-                            <div className="terminal-line error" style={{ textAlign: 'center' }}>
-                                TRACE DETECTED
-                            </div>
-                            <div className="terminal-line error" style={{ textAlign: 'center' }}>
-                                ACCESS DENIED
+                            <div className="terminal-line" style={{ textAlign: 'center' }}>
+                                Some nodes were incorrect
                             </div>
 
                             <div className="stats-container" style={{ marginTop: 30 }}>
                                 <div className="stat-row">
-                                    <span className="stat-label">Round Reached</span>
-                                    <span className="stat-value">{gameState.round}/{TOTAL_ROUNDS}</span>
+                                    <span className="stat-label">Correct Answers</span>
+                                    <span className="stat-value" style={{ color: '#00ff41' }}>{gameState.correctAnswers}/3</span>
+                                </div>
+                                <div className="stat-row">
+                                    <span className="stat-label">Wrong Answers</span>
+                                    <span className="stat-value" style={{ color: '#ff4444' }}>{gameState.wrongAnswers}/3</span>
+                                </div>
+                                <div className="stat-row">
+                                    <span className="stat-label">ASLR Tokens Earned</span>
+                                    <span className="stat-value">{gameState.tokensEarned}</span>
                                 </div>
                                 <div className="stat-row">
                                     <span className="stat-label">Sessions Remaining</span>

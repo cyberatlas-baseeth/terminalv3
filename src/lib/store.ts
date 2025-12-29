@@ -26,6 +26,8 @@ export interface GameSession {
     displayTime: number;
     tokensEarned: number;
     completed: boolean;
+    correctAnswers: number;  // Track correct answers
+    wrongAnswers: number;    // Track wrong answers
 }
 
 // In-memory stores (replace with database in production)

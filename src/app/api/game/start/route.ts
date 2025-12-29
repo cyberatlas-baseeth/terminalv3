@@ -58,6 +58,8 @@ export async function POST(request: NextRequest) {
             displayTime: roundConfig.displayTime,
             tokensEarned: 0,
             completed: false,
+            correctAnswers: 0,
+            wrongAnswers: 0,
         };
 
         createSession(session);

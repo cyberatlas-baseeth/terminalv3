@@ -1,12 +1,13 @@
 // Game configuration
 export const ROUND_CONFIG = [
-    { round: 1, numberCount: 6, displayTime: 10 },  // 10 seconds
-    { round: 2, numberCount: 8, displayTime: 9 },   // 9 seconds
-    { round: 3, numberCount: 10, displayTime: 8 },  // 8 seconds
+    { round: 1, numberCount: 6, displayTime: 10 },  // 10 seconds, 6 options
+    { round: 2, numberCount: 6, displayTime: 10 },  // 10 seconds, 6 options
+    { round: 3, numberCount: 6, displayTime: 10 },  // 10 seconds, 6 options
 ];
 
 export const MAX_SESSIONS_PER_DAY = 3;
-export const MAX_TOKENS_PER_DAY = 3;
+export const MAX_TOKENS_PER_DAY = 30; // 10 tokens x 3 rounds max
+export const TOKENS_PER_CORRECT = 10; // 10 ASLR tokens per correct answer
 export const TOTAL_ROUNDS = 3;
 
 // Generate unique random 3-digit numbers

@@ -1,8 +1,8 @@
 // Game configuration
 export const ROUND_CONFIG = [
-    { round: 1, numberCount: 6, displayTime: 10, optionCount: 5 },  // 10 seconds, 5 options (4 real + 1 fake)
-    { round: 2, numberCount: 6, displayTime: 10, optionCount: 4 },  // 10 seconds, 4 options (3 real + 1 fake)
-    { round: 3, numberCount: 6, displayTime: 10, optionCount: 3 },  // 10 seconds, 3 options (2 real + 1 fake)
+    { round: 1, numberCount: 5, displayTime: 10, optionCount: 3 },  // 10 seconds, show 5 numbers, 3 options
+    { round: 2, numberCount: 4, displayTime: 10, optionCount: 3 },  // 10 seconds, show 4 numbers, 3 options
+    { round: 3, numberCount: 3, displayTime: 10, optionCount: 3 },  // 10 seconds, show 3 numbers, 3 options
 ];
 
 export const MAX_SESSIONS_PER_COOLDOWN = 1;  // 1 attempt per cooldown period

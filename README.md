@@ -26,7 +26,7 @@ Players are ranked by their total earned ASLR tokens. Those with the highest tok
 
 ## ⏱️ Cooldown
 
-- Players can start a new game every **2 minutes**
+- Players can start a new game every **5 minutes**
 - This ensures the game remains fair and balanced
 
 ## 🛠️ Technical Details

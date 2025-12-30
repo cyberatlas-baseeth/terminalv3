@@ -1,88 +1,88 @@
 # Terminal 🖥️
 
-**Terminal**, Farcaster platformunda çalışan, siber güvenlik temalı bir hafıza oyunudur. Oyuncular, sahte ağ düğümlerini tespit etmek için hafızalarını test ederler ve doğru tahminlerle **ASLR token** kazanırlar.
+**Terminal** is a cybersecurity-themed memory game running on the Farcaster platform. Players test their memory to detect fake network nodes and earn **ASLR tokens** for correct guesses.
 
-## 🎮 Oyun Açıklaması
+## 🎮 Game Description
 
-Oyun, bir ağ güvenlik senaryosu üzerine kurulmuştur. Oyuncular, sistemde yetkisiz bir düğüm tespit edildiğinde hafıza doğrulama protokolünü başlatır. Amaç, gösterilen sayıları hatırlayarak sahte sayıyı bulmaktır.
+The game is built around a network security scenario. When an unauthorized node is detected in the system, players initiate a memory verification protocol. The goal is to identify the fake number by remembering the displayed numbers.
 
-### Oyun Akışı
+### Game Flow
 
-1. **Başlangıç**: Sistem bağlantı kurar ve yetkisiz bir düğüm tespit eder
-2. **Sayı Gösterimi**: Ekranda 6 adet 3 haneli sayı 10 saniye boyunca gösterilir
-3. **Seçim Aşaması**: 3 sayı arasından sahte olanı bulmanız istenir
-4. **Sonuç**: Doğru tahmin = 10 ASLR token kazanılır, yanlış tahmin = oyun biter
+1. **Initialization**: System establishes connection and detects an unauthorized node
+2. **Number Display**: 6 three-digit numbers are shown on screen for 10 seconds
+3. **Selection Phase**: You're asked to find the fake one among 3 numbers
+4. **Result**: Correct guess = earn 10 ASLR tokens, wrong guess = game over
 
-### Tur Sistemi
+### Round System
 
-- Toplam **3 tur** bulunur
-- Her tur başında yeni sayılar gösterilir
-- Yanlış bir tahmin tüm oyunu bitirir
-- Tüm turları tamamlayan oyuncu maksimum **30 ASLR token** kazanır
+- Total of **3 rounds**
+- New numbers are displayed at the start of each round
+- A wrong guess ends the entire game
+- Players who complete all rounds earn maximum **30 ASLR tokens**
 
-## 🏆 Liderlik Tablosu
+## 🏆 Leaderboard
 
-Oyuncular toplam kazandıkları ASLR token sayısına göre sıralanır. En yüksek token'a sahip oyuncular liderlik tablosunda üst sıralarda yer alır.
+Players are ranked by their total earned ASLR tokens. Those with the highest token count appear at the top of the leaderboard.
 
-## ⏱️ Bekleme Süresi (Cooldown)
+## ⏱️ Cooldown
 
-- Oyuncular her **2 dakikada** bir yeni oyun başlatabilir
-- Bu süre, oyunun adil ve dengeli kalmasını sağlar
+- Players can start a new game every **2 minutes**
+- This ensures the game remains fair and balanced
 
-## 🛠️ Teknik Detaylar
+## 🛠️ Technical Details
 
-### Teknoloji Yığını
+### Tech Stack
 
 - **Framework**: Next.js 14 (App Router)
-- **Dil**: TypeScript
-- **Veritabanı**: PostgreSQL (Neon)
+- **Language**: TypeScript
+- **Database**: PostgreSQL (Neon)
 - **Platform**: Farcaster MiniApp
-- **Stil**: CSS (Terminal teması)
+- **Styling**: CSS (Terminal theme)
 
-### Proje Yapısı
+### Project Structure
 
 ```
 src/
 ├── app/
 │   ├── api/
-│   │   ├── game/          # Oyun API'leri (start, answer)
-│   │   ├── leaderboard/   # Liderlik tablosu API'si
-│   │   └── player/        # Oyuncu istatistikleri
-│   ├── page.tsx           # Ana oyun bileşeni
-│   ├── layout.tsx         # Uygulama layout'u
-│   └── globals.css        # Global stiller
+│   │   ├── game/          # Game APIs (start, answer)
+│   │   ├── leaderboard/   # Leaderboard API
+│   │   └── player/        # Player statistics
+│   ├── page.tsx           # Main game component
+│   ├── layout.tsx         # Application layout
+│   └── globals.css        # Global styles
 └── lib/
-    ├── db.ts              # Veritabanı bağlantısı
-    ├── farcaster.ts       # Farcaster SDK entegrasyonu
-    └── gameLogic.ts       # Oyun mantığı ve konfigürasyonu
+    ├── db.ts              # Database connection
+    ├── farcaster.ts       # Farcaster SDK integration
+    └── gameLogic.ts       # Game logic and configuration
 ```
 
-## 🚀 Kurulum
+## 🚀 Setup
 
-### Gereksinimler
+### Requirements
 
 - Node.js 18+
-- PostgreSQL veritabanı
-- Farcaster hesabı (test için)
+- PostgreSQL database
+- Farcaster account (for testing)
 
-### Adımlar
+### Steps
 
-1. **Bağımlılıkları yükleyin**
+1. **Install dependencies**
    ```bash
    npm install
    ```
 
-2. **Ortam değişkenlerini ayarlayın**
+2. **Set up environment variables**
    ```bash
    cp .env.example .env.local
    ```
    
-   `.env.local` dosyasını düzenleyin:
+   Edit `.env.local`:
    ```
    DATABASE_URL=postgresql://...
    ```
 
-3. **Veritabanı tablolarını oluşturun**
+3. **Create database tables**
    ```sql
    CREATE TABLE players (
      fid INTEGER PRIMARY KEY,
@@ -102,39 +102,39 @@ src/
    );
    ```
 
-4. **Geliştirme sunucusunu başlatın**
+4. **Start the development server**
    ```bash
    npm run dev
    ```
 
-5. **Tarayıcıda açın**
+5. **Open in browser**
    ```
    http://localhost:3000
    ```
 
-## 📝 Oyun Konfigürasyonu
+## 📝 Game Configuration
 
-`src/lib/gameLogic.ts` dosyasından oyun ayarları değiştirilebilir:
+Game settings can be modified in `src/lib/gameLogic.ts`:
 
-| Ayar | Varsayılan | Açıklama |
-|------|------------|----------|
-| `TOTAL_ROUNDS` | 3 | Toplam tur sayısı |
-| `COOLDOWN_MINUTES` | 2 | Bekleme süresi (dakika) |
-| `TOKENS_PER_CORRECT` | 10 | Doğru tahmin başına token |
-| `MAX_TOKENS_PER_SESSION` | 30 | Oturum başına maksimum token |
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `TOTAL_ROUNDS` | 3 | Total number of rounds |
+| `COOLDOWN_MINUTES` | 2 | Cooldown duration (minutes) |
+| `TOKENS_PER_CORRECT` | 10 | Tokens per correct answer |
+| `MAX_TOKENS_PER_SESSION` | 30 | Maximum tokens per session |
 
-## 🎨 Tema
+## 🎨 Theme
 
-Oyun, retro terminal estetiğine sahiptir:
-- Siyah arka plan
-- Yeşil fosforlu yazılar
-- Tarama çizgisi efekti
-- Glitch animasyonları
+The game features a retro terminal aesthetic:
+- Black background
+- Green phosphor text
+- Scanline effect
+- Glitch animations
 
-## 📄 Lisans
+## 📄 License
 
 MIT License
 
 ---
 
-**Terminal** - Hafızanı test et, sahte düğümü bul! 🔍
+**Terminal** - Test your memory, find the fake node! 🔍

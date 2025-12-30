@@ -6,7 +6,8 @@ import {
     getRoundConfig,
     generateNonce,
     TOTAL_ROUNDS,
-    TOKENS_PER_CORRECT
+    TOKENS_PER_CORRECT,
+    BONUS_TOKENS
 } from '@/lib/gameLogic';
 import {
     getSession,
@@ -92,6 +93,20 @@ export async function POST(request: NextRequest) {
         // Check if this was the last round (regardless of correct/wrong)
         if (session.round >= TOTAL_ROUNDS) {
             // Session complete - all 3 rounds finished!
+            const perfect = newWrongAnswers === 0;
+
+            // Award bonus tokens for perfect game (all 3 correct)
+            let bonusTokens = 0;
+            if (perfect) {
+                bonusTokens = BONUS_TOKENS;
+                newTokensEarned += bonusTokens;
+                try {
+                    await addPlayerTokens(fid, bonusTokens);
+                } catch (dbError) {
+                    console.error('Failed to save bonus tokens to database:', dbError);
+                }
+            }
+
             updateSession(sessionId, {
                 completed: true,
                 tokensEarned: newTokensEarned,
@@ -99,7 +114,6 @@ export async function POST(request: NextRequest) {
                 wrongAnswers: newWrongAnswers
             });
 
-            const perfect = newWrongAnswers === 0;
             recordSessionCompletion(fid, perfect);
 
             const totalTime = Math.floor((Date.now() - session.startedAt.getTime()) / 1000);
@@ -109,6 +123,7 @@ export async function POST(request: NextRequest) {
                 message: perfect ? 'CONNECTION FULLY SECURED' : 'SESSION COMPLETE',
                 sessionComplete: true,
                 tokensEarned: newTokensEarned,
+                bonusTokens: bonusTokens,
                 correctAnswers: newCorrectAnswers,
                 wrongAnswers: newWrongAnswers,
                 totalTime,

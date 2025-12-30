@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
 
         const shownNumbers = generateNumbers(roundConfig.numberCount);
         const fakeNumber = generateFakeNumber(shownNumbers);
-        const selectionOptions = createSelectionOptions(shownNumbers, fakeNumber);
+        const selectionOptions = createSelectionOptions(shownNumbers, fakeNumber, roundConfig.optionCount);
         const newNonce = generateNonce();
 
         // Update session for next round

@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         // Generate numbers server-side
         const shownNumbers = generateNumbers(roundConfig.numberCount);
         const fakeNumber = generateFakeNumber(shownNumbers);
-        const selectionOptions = createSelectionOptions(shownNumbers, fakeNumber);
+        const selectionOptions = createSelectionOptions(shownNumbers, fakeNumber, roundConfig.optionCount);
         const nonce = generateNonce();
         const sessionId = generateNonce();
 

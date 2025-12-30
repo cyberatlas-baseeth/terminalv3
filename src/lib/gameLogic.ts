@@ -1,8 +1,8 @@
 // Game configuration
 export const ROUND_CONFIG = [
-    { round: 1, numberCount: 6, displayTime: 10 },  // 10 seconds, 6 options
-    { round: 2, numberCount: 6, displayTime: 10 },  // 10 seconds, 6 options
-    { round: 3, numberCount: 6, displayTime: 10 },  // 10 seconds, 6 options
+    { round: 1, numberCount: 6, displayTime: 10, optionCount: 5 },  // 10 seconds, 5 options (4 real + 1 fake)
+    { round: 2, numberCount: 6, displayTime: 10, optionCount: 4 },  // 10 seconds, 4 options (3 real + 1 fake)
+    { round: 3, numberCount: 6, displayTime: 10, optionCount: 3 },  // 10 seconds, 3 options (2 real + 1 fake)
 ];
 
 export const MAX_SESSIONS_PER_COOLDOWN = 1;  // 1 attempt per cooldown period
@@ -31,11 +31,11 @@ export function generateFakeNumber(shownNumbers: number[]): number {
     return fakeNumber;
 }
 
-// Select 2 real numbers and 1 fake for the selection phase
-export function createSelectionOptions(shownNumbers: number[], fakeNumber: number): number[] {
-    // Pick 2 random numbers from the shown ones
+// Select real numbers and 1 fake for the selection phase
+export function createSelectionOptions(shownNumbers: number[], fakeNumber: number, optionCount: number = 3): number[] {
+    // Pick (optionCount - 1) random numbers from the shown ones
     const shuffled = [...shownNumbers].sort(() => Math.random() - 0.5);
-    const realNumbers = shuffled.slice(0, 2);
+    const realNumbers = shuffled.slice(0, optionCount - 1);
 
     // Combine with fake and shuffle
     const options = [...realNumbers, fakeNumber].sort(() => Math.random() - 0.5);

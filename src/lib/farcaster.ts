@@ -60,7 +60,7 @@ export async function shareResult(totalTime: number, perfectGame: boolean): Prom
             ? `${totalTime} seconds`
             : `${Math.floor(totalTime / 60)}m ${totalTime % 60}s`;
 
-        const text = `🔒 I secured the connection in ${timeDisplay}.\n\nAccess level: ${accessLevel}\n\nCan you beat my time?`;
+        const text = `🔒 I secured the connection in ${timeDisplay}.\n\nAccess level: ${accessLevel}\n\nCan you beat my time?\n\nhttps://farcaster.xyz/miniapps/cIo-J-RvhenI/terminal`;
 
         await sdk.actions.composeCast({
             text,

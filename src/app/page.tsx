@@ -555,7 +555,7 @@ export default function Game() {
                         </div>
 
                         <div className="terminal-line" style={{ margin: '20px 0', textAlign: 'center' }}>
-                            Which node was NOT displayed?
+                            switch
                         </div>
 
                         <div className="selection-container">
@@ -642,7 +642,7 @@ export default function Game() {
                                 className="action-btn primary"
                                 onClick={viewCooldownStatus}
                             >
-                                [ VIEW COOLDOWN STATUS ]
+                                [ STATUS ]
                             </button>
                         </div>
                     </div>
@@ -678,7 +678,7 @@ export default function Game() {
                                 className="action-btn primary"
                                 onClick={viewCooldownStatus}
                             >
-                                [ VIEW COOLDOWN STATUS ]
+                                [ STATUS ]
                             </button>
                         </div>
                     </div>

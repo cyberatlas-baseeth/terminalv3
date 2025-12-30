@@ -6,7 +6,7 @@ export const ROUND_CONFIG = [
 ];
 
 export const MAX_SESSIONS_PER_COOLDOWN = 1;  // 1 attempt per cooldown period
-export const COOLDOWN_MINUTES = 2;  // 2 minute cooldown for testing (change to 6 * 60 = 360 for 6 hours)
+export const COOLDOWN_MINUTES = 5;  // 5 minute cooldown
 export const MAX_TOKENS_PER_SESSION = 50; // 10 tokens x 3 rounds + 20 bonus = 50 max per session
 export const TOKENS_PER_CORRECT = 10; // 10 ASLR tokens per correct answer
 export const BONUS_TOKENS = 20; // 20 bonus tokens for perfect game (all 3 correct)
